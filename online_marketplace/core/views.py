@@ -4,3 +4,6 @@ from django.shortcuts import render
 
 def index(response):
     return render(response, 'core/index.html')
+
+def contact(response):
+    return render(response, 'core/contact.html')
