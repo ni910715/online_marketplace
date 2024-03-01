@@ -2,13 +2,14 @@
 
 跟著Youtube頻道[freeCodeCamp.org](https://www.youtube.com/watch?v=ZxMB6Njs3ck&list=PLEfmhkMT7yZiVXuExfXWd5pYWutdasC5r&index=1&t=931s)實做練習
 
-### 疑問
+## 疑問
 
 - 為何LoginForm不需要在views.py中宣告？
+- 在view中使用response和request有什麼不同？為什麼相互替換也可以使用？
 
 # 學習筆記
 
-### Forms流程
+## Forms流程
 
 **創建forms.py (SignupForm)**
 
@@ -36,7 +37,7 @@ class SignupForm(UserCreationForm):
     }))
 ```
 
- **新增到views**
+**新增到views**
 
 ``` python
 def signup(response):
@@ -193,10 +194,10 @@ path('login/', auth_views.LoginView.as_view(template_name='core/login.html', aut
                     <a href="{% url 'core:login' %}" class="px-6 py-3 text-lg font-semiblod bg-gray-500 text-white rounded-xl hover:bg-gray-700">Log in</a>
                 {% endif%}
 ```
+### HTML form參數
+`enctype="multipart/form-data"`代表可以上傳圖片
 
-
-
-### 設定Login Logout url
+## 設定Login Logout url
 
 在主app中開啟settings.py並加入以下
 
@@ -208,7 +209,7 @@ LOGOUT_REDIRECT_URL='/'
 
 `LOGIN_URL`為登入頁面的網址，`LOGIN_REDIRECT_URL`為登入後的重新導向網址，`LOGOUT_REDIRECT_URL='/'`為都出後所重新導向的網址
 
-### URL設定
+## URL設定
 
 **在新創見的app中加入urls.py**
 
@@ -244,7 +245,7 @@ urlpatterns = [
 
 `path('item/', include('item.urls')),`所有由item所產生的url都會在`item/`之後
 
-**html中操作網址用法**
+### html中操作網址用法
 
 ```html
 <a href="{% url 'core:contact' %}" class="text-teal-500 hover:text-teal-700">Contact</a>
@@ -252,3 +253,5 @@ urlpatterns = [
 
 `{% url 'core:contact' %}`中core為該url所屬的app_name,contact為path中所取的別名,點擊Contact後就會跳轉到該url
 
+## Decorators
+**login_required**:只有在登入過後才能進入，否則重新導向login page
