@@ -196,7 +196,71 @@ path('login/', auth_views.LoginView.as_view(template_name='core/login.html', aut
 ```
 ### HTML form參數
 `enctype="multipart/form-data"`代表可以上傳圖片
+### forms styling的方式
+```python
+class SignupForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+    
+    username = forms.CharField(widget=forms.TextInput(attrs={
+        'placeholder':'Your username',
+        'class':'w-full py-4 px-6 rounded-xl'
+    }))
+    email = forms.CharField(widget=forms.EmailInput(attrs={
+        'placeholder':'Your email address',
+        'class':'w-full py-4 px-6 rounded-xl'
+    }))
+    password1 = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder':'Your password',
+        'class':'w-full py-4 px-6 rounded-xl'
+    }))
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder':'Repeat password',
+        'class':'w-full py-4 px-6 rounded-xl'
+    }))
+```
+```python
+INPUT_CLASSES = 'w-full py-4 px-6 rounded-xl border'
+class NewItemForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = ('category', 'name', 'description', 'price', 'image',)
+        widgets = {
+            'category':forms.Select(attrs={
+                'class': INPUT_CLASSES
+            }),
+            'name':forms.TextInput(attrs={
+                'class': INPUT_CLASSES
+            }),
+            'description':forms.Textarea(attrs={
+                'class': INPUT_CLASSES
+            }),
+            'price':forms.TextInput(attrs={
+                'class': INPUT_CLASSES
+            }),
+            'image':forms.FileInput(attrs={
+                'class': INPUT_CLASSES
+            })
+        }
+```
+## method
+```python
+if response.method == 'POST':
+        form = NewItemForm(response.POST, response.FILES)
+        print(form)
+        
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.create_by = response.user
+            item.save()
 
+            return redirect('item:detail', pk=item.id)
+    else:
+        form = NewItemForm()
+```
+`response.POST`收取文字  
+`response.FILES`因為有在form中使用圖檔
 ## 設定Login Logout url
 
 在主app中開啟settings.py並加入以下
@@ -207,7 +271,8 @@ LOGIN_REDIRECT_URL='/'
 LOGOUT_REDIRECT_URL='/'
 ```
 
-`LOGIN_URL`為登入頁面的網址，`LOGIN_REDIRECT_URL`為登入後的重新導向網址，`LOGOUT_REDIRECT_URL='/'`為都出後所重新導向的網址
+`LOGIN_URL`為登入頁面的網址  
+`LOGIN_REDIRECT_URL`為登入後的重新導向網址 `LOGOUT_REDIRECT_URL='/'`為都出後所重新導向的網址  
 
 ## URL設定
 
@@ -254,4 +319,15 @@ urlpatterns = [
 `{% url 'core:contact' %}`中core為該url所屬的app_name,contact為path中所取的別名,點擊Contact後就會跳轉到該url
 
 ## Decorators
-**login_required**:只有在登入過後才能進入，否則重新導向login page
+導入
+```python
+from django.contrib.auth.decorators import login_required
+```
+**login_required**:只有在登入過後才能進入，否則重新導向login page  
+Example:
+```python
+@login_required
+def new(response):
+    form = NewItemForm()
+    return render(response, 'item/form.html', {'form':form, 'title':'New Item'})
+```
