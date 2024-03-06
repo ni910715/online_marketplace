@@ -4,17 +4,17 @@ from .forms import SignupForm
 
 # Create your views here.
 
-def index(response):
+def index(request):
     items = Item.objects.filter(is_sold=False)[0:6]
     categories = Category.objects.all()
-    return render(response, 'core/index.html', {'items':items, 'categories':categories})
+    return render(request, 'core/index.html', {'items':items, 'categories':categories})
 
-def contact(response):
-    return render(response, 'core/contact.html')
+def contact(request):
+    return render(request, 'core/contact.html')
 
-def signup(response):
-    if response.method == 'POST':
-        form = SignupForm(response.POST)
+def signup(request):
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
 
         if form.is_valid():
             form.save()
@@ -23,4 +23,4 @@ def signup(response):
     else:
         form = SignupForm()
     
-    return render(response, 'core/signup.html', {'form':form})
+    return render(request, 'core/signup.html', {'form':form})

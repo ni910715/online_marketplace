@@ -4,6 +4,6 @@ from item.models import Item
 
 # Create your views here.
 @login_required
-def index(response):
-    items = Item.objects.filter(create_by=response.user)
-    return render(response, 'dashboard/index.html', {'items':items})
+def index(request):
+    items = Item.objects.filter(create_by=request.user)
+    return render(request, 'dashboard/index.html', {'items':items})

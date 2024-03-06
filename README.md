@@ -5,7 +5,6 @@
 ## 疑問
 
 - 為何LoginForm不需要在views.py中宣告？
-- 在view中使用response和request有什麼不同？為什麼相互替換也可以使用？
 
 # 學習筆記
 
@@ -40,9 +39,9 @@ class SignupForm(UserCreationForm):
 **新增到views**
 
 ``` python
-def signup(response):
-    if response.method == 'POST':
-        form = SignupForm(response.POST)
+def signup(request):
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
 
         if form.is_valid():
             form.save()
@@ -51,7 +50,7 @@ def signup(response):
     else:
         form = SignupForm()
     
-    return render(response, 'core/signup.html', {'form':form})
+    return render(request, 'core/signup.html', {'form':form})
 ```
 
 **新增HTML模板**
@@ -196,7 +195,7 @@ path('login/', auth_views.LoginView.as_view(template_name='core/login.html', aut
 ```
 ### HTML form參數
 `enctype="multipart/form-data"`代表可以上傳圖片
-### forms styling的方式
+### Forms styling的方式
 ```python
 class SignupForm(UserCreationForm):
     class Meta:
@@ -244,23 +243,42 @@ class NewItemForm(forms.ModelForm):
             })
         }
 ```
-## method
+### 表單初始化
 ```python
-if response.method == 'POST':
-        form = NewItemForm(response.POST, response.FILES)
+@login_required
+def edit(request, pk):
+    item = get_object_or_404(Item, pk=pk, create_by=request.user)
+
+    if request.method == 'POST':
+        form = EditItemForm(request.POST, request.FILES, instance=item)
+        print(form)
+        
+        if form.is_valid():
+            form.save()
+
+            return redirect('item:detail', pk=item.id)
+    else:
+        form = EditItemForm(instance=item)
+    return render(request, 'item/form.html', {'form':form, 'title':'Edit Item'})
+```
+`instance=item`告訴表單以該item內容為初始化
+## Method
+```python
+if request.method == 'POST':
+        form = NewItemForm(request.POST, request.FILES)
         print(form)
         
         if form.is_valid():
             item = form.save(commit=False)
-            item.create_by = response.user
+            item.create_by = request.user
             item.save()
 
             return redirect('item:detail', pk=item.id)
     else:
         form = NewItemForm()
 ```
-`response.POST`收取文字  
-`response.FILES`因為有在form中使用圖檔
+`request.POST`收取文字  
+`request.FILES`因為有在form中使用圖檔
 ## 設定Login Logout url
 
 在主app中開啟settings.py並加入以下
@@ -310,7 +328,7 @@ urlpatterns = [
 
 `path('item/', include('item.urls')),`所有由item所產生的url都會在`item/`之後
 
-### html中操作網址用法
+### Html中操作網址用法
 
 ```html
 <a href="{% url 'core:contact' %}" class="text-teal-500 hover:text-teal-700">Contact</a>
@@ -327,7 +345,12 @@ from django.contrib.auth.decorators import login_required
 Example:
 ```python
 @login_required
-def new(response):
+def new(request):
     form = NewItemForm()
-    return render(response, 'item/form.html', {'form':form, 'title':'New Item'})
+    return render(request, 'item/form.html', {'form':form, 'title':'New Item'})
 ```
+## Models
+```python
+items = Item.objects.filter(create_by=request.user)
+```
+查找所有使用者所建立的物件
