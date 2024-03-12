@@ -262,6 +262,60 @@ def edit(request, pk):
     return render(request, 'item/form.html', {'form':form, 'title':'Edit Item'})
 ```
 `instance=item`告訴表單以該item內容為初始化
+### Search
+**browse**
+```html
+<div class="col-span-1">
+    <form method="get" action="{% url 'item:browse' %}">
+        <input name="query" class="w-full py-4 px-6 border rounded-xl" type="text" value="{{query}}" placeholder="Find a bike, a chair or a car...">
+
+        <button class="mt-2 py-2 px-8 text-lg bg-teal-500 text-white rounded-xl">Search</button>
+    </form>
+
+    <hr class="my-6">
+    <p class="font-semiblod">Categories</p>
+    <ul>
+        {% for category in categories %}
+        <li class="py-2 px-2 rounded-xl {% if category.id == category_id %}bg-gray-200{% endif %}">
+            <a href="{% url 'item:browse' %}?query={{query}}&category={{category.id}}">{{category.name}}</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <hr class="my-6">
+    <p class="font-semiblod">Clear filters</p>
+
+    <ul>
+        <li>
+            <a href="{% url 'item:browse' %}" class="mt-2 py-4 px-8 inline-block bg-yellow-500 text-lg rounded-xl text-white">Clear</a>
+        </li>
+    </ul>
+
+</div>
+```
+`value=" "`為input元素的初始值  
+`?query={{query}}&category={{category.id}}`可以在網址中插入額外的搜尋網址  
+**views**
+```python
+def browse(request):
+    query = request.GET.get('query', '')
+    category_id =request.GET.get('category', 0)
+    categories = Category.objects.all()
+    items = Item.objects.filter(is_sold=False)
+
+    if category_id:
+        items = items.filter(category_id=category_id)
+
+    if query:
+        items = items.filter(Q(name__icontains=query) | Q(description__icontains=query))
+
+    return render(request, 'item/browse.html', {'items':items, 'query':query, 'categories':categories, 'category_id':int(category_id)})
+```
+```python
+from django.db.models import Q
+```
+`Q`模組提供複雜查詢方法，可同時查詢符合多個條件的項目  
+`name__icontains=query`將模型Item中的name與query參數做不區分大小寫的**模糊過濾**
 ## Method
 ```python
 if request.method == 'POST':
