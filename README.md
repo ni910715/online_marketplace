@@ -404,7 +404,23 @@ def new(request):
     return render(request, 'item/form.html', {'form':form, 'title':'New Item'})
 ```
 ## Models
+### Create
+```python
+class Conversation(models.Model):
+    item = models.ForeignKey(Item, related_name='conversations', on_delete=models.CASCADE)
+    members = models.ManyToManyField(User, related_name='conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    class  Meta:
+        ordering = ('-modified_at',)
+```
+`DateTimeField`紀錄日期+時間，另有`DateField`和`TimeField`  
+`auto_now_add`用於記錄創建當下得時間戳記  
+`auto_now`用於記錄並更新每次儲存時的時間戳記  
+`ordering`排序方式
+### 在view中操作資料庫
 ```python
 items = Item.objects.filter(create_by=request.user)
 ```
-查找所有使用者所建立的物件
+查找所有使用者所建立的物件   
