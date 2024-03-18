@@ -1,9 +1,11 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Conversation, ConversationMessage
 from item.models import Item
 from .forms import ConversationMessageForm
 # Create your views here.
 
+@login_required
 def new_conversation(request, item_pk):
     item = get_object_or_404(Item, pk=item_pk)
 
@@ -36,4 +38,20 @@ def new_conversation(request, item_pk):
 
     return render(request, 'conversation/new.html', {
         'form':form
+    })
+
+@login_required
+def inbox(request):
+    conversations = Conversation.objects.filter(members__in=[request.user.id])
+
+    return render(request, 'conversation/inbox.html', {
+        'conversations':conversations
+    })
+
+@login_required
+def detail(request, pk):
+    conversation = Conversation.objects.filter(members__in=[request.user.id]).get(pk=pk)
+
+    return render(request, 'conversation/detail.html', {
+        'conversation':conversation
     })
